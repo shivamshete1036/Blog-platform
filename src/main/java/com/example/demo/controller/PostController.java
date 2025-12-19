@@ -78,5 +78,23 @@ public class PostController {
         postService.deletePost(id);
         return "redirect:/"; // Go back to homepage after deleting
     }
+
+    // 1. Show the Edit Form
+    @GetMapping("/post/edit/{id}")
+    public String showEditForm(@PathVariable("id") Long id, Model model) {
+        Post post = postService.findPostById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + id));
+        model.addAttribute("post", post);
+        return "edit-post"; // We will create this HTML next
+    }
+
+    // 2. Handle the Update
+    @PostMapping("/post/edit/{id}")
+    public String updatePost(@PathVariable("id") Long id, @ModelAttribute("post") Post post) {
+        // Ensure we keep the same IDso it updates the existing record instead of creating a new one
+        post.setId(id);
+        postService.savePost(post);
+        return "redirect:/post/" + id; // Redirect back to the single post view
+    }
 }
 
