@@ -1,35 +1,40 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>Simple Blog Homepage</title>
+    <title> Blog Homepage</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         .post-summary { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
     </style>
 </head>
-<body>
-<h1>Welcome to the Simple Blog</h1>
-<p>A place to read all the latest updates.</p>
+<body class="bg-light">
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">My Tech Blog</a>
+        <a th:href="@{/new-post}" class="btn btn-outline-light">+ New Post</a>
+    </div>
+</nav>
 
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mb-4" th:each="post : ${posts}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${post.title}">Post Title</h5>
+                    <p class="card-text text-muted small"
+                       th:text="${#temporals.format(post.dateCreated, 'dd MMM yyyy')}">Date</p>
+                    <p class="card-text" th:text="${#strings.abbreviate(post.content, 100)}">Content preview...</p>
+                    <a th:href="@{/post/{id}(id=${post.id})}" class="btn btn-primary btn-sm">Read More</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<a th:href="@{/new-post}">+ Create New Post</a>
-
-<hr>
-
-<div th:each="post : ${posts}" class="post-summary">
-    <h2 th:text="${post.title}">Post Title Placeholder</h2>
-
-    <p>Published on: <span th:text="${#temporals.format(post.dateCreated, 'dd-MM-yyyy HH:mm')}">Date Placeholder</span></p>
-
-    <p th:text="${#strings.substring(post.content, 0, T(java.lang.Math).min(100, post.content.length()))} + '...'"></p>
-
-    <a th:href="@{/post/{id}(id=${post.id})}">Read Full Post</a>
+    <div th:if="${#lists.isEmpty(posts)}" class="text-center mt-5">
+        <p class="text-muted">No posts found. Start by creating one!</p>
+    </div>
 </div>
-
-<div th:if="${posts.isEmpty()}">
-    <p>No posts have been published yet. Be the first!</p>
-</div>
-
 </body>
 </html>
