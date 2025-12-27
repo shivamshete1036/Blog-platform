@@ -10,26 +10,50 @@
     </style>
 </head>
 <body class="bg-light">
-<nav class="navbar navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <a class="navbar-brand" href="/">My Tech Blog</a>
-        <a th:href="@{/new-post}" class="btn btn-outline-light">+ New Post</a>
+        <a class="navbar-brand" href="/">My Blog</a>
+        <div class="navbar-nav ms-auto">
+            <div th:if="${#authorization.expression('isAnonymous()')}" class="d-flex">
+                <a class="nav-link" href="/login">Login</a>
+                <a class="nav-link btn btn-primary text-white ms-2" href="/register">Register</a>
+            </div>
+
+            <div th:if="${#authorization.expression('isAuthenticated()')}" class="d-flex align-items-center">
+                <span class="text-light me-3">Welcome, <span th:text="${#authentication.name}">User</span>!</span>
+                <a class="nav-link" href="/new-post">New Post</a>
+
+                <form th:action="@{/logout}" method="post" class="ms-2">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
     </div>
 </nav>
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-4 mb-4" th:each="post : ${posts}">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${post.title}">Post Title</h5>
-                    <p class="card-text text-muted small"
-                       th:text="${#temporals.format(post.dateCreated, 'dd MMM yyyy')}">Date</p>
-                    <p class="card-text" th:text="${#strings.abbreviate(post.content, 100)}">Content preview...</p>
-                    <a th:href="@{/post/{id}(id=${post.id})}" class="btn btn-primary btn-sm">Read More</a>
-                </div>
+    <<div th:each="post : ${posts}" class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <h2 th:text="${post.title}">Post Title</h2>
+
+        <p class="text-muted small">
+            By: <span th:text="${post.author.username}">Author Name</span>
+        </p>
+
+        <p th:text="${#strings.abbreviate(post.content, 150)}">Post Content Summary...</p>
+
+        <div class="d-flex gap-2">
+            <a th:href="@{/post/{id}(id=${post.id})}" class="btn btn-primary btn-sm">Read More</a>
+
+            <div th:if="${#authentication.name == post.author.username}" class="d-flex gap-2">
+                <a th:href="@{/post/edit/{id}(id=${post.id})}" class="btn btn-warning btn-sm">Edit</a>
+                <a th:href="@{/post/delete/{id}(id=${post.id})}"
+                   class="btn btn-danger btn-sm"
+                   onclick="return confirm('Are you sure you want to delete this post?')">Delete</a>
             </div>
         </div>
+    </div>
+</div>
     </div>
 
     <div th:if="${#lists.isEmpty(posts)}" class="text-center mt-5">

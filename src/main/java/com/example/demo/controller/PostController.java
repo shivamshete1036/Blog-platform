@@ -1,100 +1,107 @@
 package com.example.demo.controller;
 
-import com.example.demo.Post;
+import com.example.demo.entity.Post;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.PostService;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
-@Controller // 1. Marks this class as a Spring MVC Controller
+@Controller
 public class PostController {
 
     private final PostService postService;
+    private final UserRepository userRepository;
 
-    // 2. Inject the PostService
-    public PostController(PostService postService) {
+    // Inject both the PostService and UserRepository
+    public PostController(PostService postService, UserRepository userRepository) {
         this.postService = postService;
+        this.userRepository = userRepository;
     }
 
-    /**
-     * Handles GET requests to the root URL (homepage).
-     * Maps the URL "/" to this method.
-     */
     @GetMapping("/")
     public String listPosts(Model model) {
-        // 3. Use the service layer to retrieve all posts
-        //    (The service uses the repository to talk to the DB)
-        
-        // 4. Add the list of posts to the Model object
-        //    The Model is what passes data from the Controller to the View (Thymeleaf).
         model.addAttribute("posts", postService.findAllPosts());
-
-        // 5. Return the name of the Thymeleaf template file (without the .html extension)
-        //    Spring will look for 'src/main/resources/templates/index.html'
-        return "index"; 
+        return "index";
     }
 
     @GetMapping("/new-post")
     public String showNewPostForm(Model model) {
-        // If this line is missing, the 'th:object="${post}"' in your HTML will cause a 500 error
         model.addAttribute("post", new Post());
         return "new-post";
     }
 
-    // --- NEW: Handle Form Submission ---
     /**
-     * Handles POST request from the new-post form.
-     * @ModelAttribute binds the form data to the Post object.
+     * Updated: Captures the 'Authentication' object to identify the logged-in user.
      */
     @PostMapping("/new-post")
-    public String savePost(@ModelAttribute("post") Post post) {
-        // 1. Save the post using the service
+    public String savePost(@ModelAttribute("post") Post post, Authentication authentication) {
+        // 1. Get the username of the logged-in user
+        String username = authentication.getName();
+
+        // 2. Find the User entity from the DB
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 3. Link the user as the author
+        post.setAuthor(user);
+
+        // 4. Save the post
         postService.savePost(post);
 
-        // 2. Redirect back to the homepage
-        // Note: Use "redirect:/" to tell the browser to load the home page again
         return "redirect:/";
     }
 
     @GetMapping("/post/{id}")
     public String viewPost(@PathVariable("id") Long id, Model model) {
-        // 1. Fetch the post from the service
-        // .orElseThrow handles cases where someone types an ID that doesn't exist
         Post post = postService.findPostById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + id));
-
-        // 2. Add the post object to the model
         model.addAttribute("post", post);
-
-        // 3. Return the name of the new HTML file
         return "post-details";
     }
 
     @GetMapping("/post/delete/{id}")
-    public String deletePost(@PathVariable("id") Long id) {
-        postService.deletePost(id);
-        return "redirect:/"; // Go back to homepage after deleting
-    }
-
-    // 1. Show the Edit Form
-    @GetMapping("/post/edit/{id}")
-    public String showEditForm(@PathVariable("id") Long id, Model model) {
+    public String deletePost(@PathVariable("id") Long id, Authentication authentication) {
         Post post = postService.findPostById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + id));
-        model.addAttribute("post", post);
-        return "edit-post"; // We will create this HTML next
+
+        // BACKEND SECURITY: Only allow the author to delete
+        if (post.getAuthor().getUsername().equals(authentication.getName())) {
+            postService.deletePost(id);
+        }
+
+        return "redirect:/";
     }
 
-    // 2. Handle the Update
+    @GetMapping("/post/edit/{id}")
+    public String showEditForm(@PathVariable("id") Long id, Model model, Authentication authentication) {
+        Post post = postService.findPostById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + id));
+
+        // BACKEND SECURITY: Only allow the author to see the edit form
+        if (!post.getAuthor().getUsername().equals(authentication.getName())) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("post", post);
+        return "edit-post";
+    }
+
     @PostMapping("/post/edit/{id}")
-    public String updatePost(@PathVariable("id") Long id, @ModelAttribute("post") Post post) {
-        // Ensure we keep the same IDso it updates the existing record instead of creating a new one
-        post.setId(id);
-        postService.savePost(post);
-        return "redirect:/post/" + id; // Redirect back to the single post view
+    public String updatePost(@PathVariable("id") Long id, @ModelAttribute("post") Post post, Authentication authentication) {
+        // Fetch existing post to preserve the original author and ID
+        Post existingPost = postService.findPostById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + id));
+
+        // BACKEND SECURITY: Verify authorship again on submission
+        if (existingPost.getAuthor().getUsername().equals(authentication.getName())) {
+            existingPost.setTitle(post.getTitle());
+            existingPost.setContent(post.getContent());
+            postService.savePost(existingPost);
+        }
+
+        return "redirect:/post/" + id;
     }
 }
-
