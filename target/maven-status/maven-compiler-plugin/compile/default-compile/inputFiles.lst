@@ -1,5 +1,11 @@
-C:\Users\shete\OneDrive\Desktop\blog\demo\src\main\java\com\example\demo\Post.java
-C:\Users\shete\OneDrive\Desktop\blog\demo\src\main\java\com\example\demo\DemoApplication.java
-C:\Users\shete\OneDrive\Desktop\blog\demo\src\main\java\com\example\demo\service\PostService.java
-C:\Users\shete\OneDrive\Desktop\blog\demo\src\main\java\com\example\demo\controller\PostController.java
-C:\Users\shete\OneDrive\Desktop\blog\demo\src\main\java\com\example\demo\repository\PostRepository.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\Post.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\controller\AuthController.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\repository\UserRepository.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\service\PostService.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\controller\PostController.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\service\CustomUserDetailsService.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\repository\PostRepository.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\entity\Post.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\DemoApplication.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\config\SecurityConfig.java
+C:\Users\shete\OneDrive\Desktop\java project - blog site\Blog-platform\src\main\java\com\example\demo\entity\User.java
